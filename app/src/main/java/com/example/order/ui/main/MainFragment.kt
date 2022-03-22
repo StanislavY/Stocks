@@ -2,10 +2,14 @@ package com.example.order.ui.main
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.view.*
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isGone
@@ -27,6 +31,7 @@ import com.example.order.databinding.MainFragmentBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.android.synthetic.main.main_fragment.*
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -45,12 +50,16 @@ class MainFragment : Fragment() {
     }
 
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
         return binding.root
+
+
+
     }
 
     override fun onDestroyView() {
@@ -64,11 +73,22 @@ class MainFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val etSearchBar=binding.inputEditText
+
+        if (etSearchBar.requestFocus()) {
+            (requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(
+                InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY
+            )
+
+        }
         val textView     = binding.inputEditTextDate
         val c = Calendar.getInstance()
         val year = c.get(Calendar.YEAR)
         val month = c.get(Calendar.MONTH)
         val day = c.get(Calendar.DAY_OF_MONTH)
+        val month1 =month+1
+
+        Keys.CURRENT_DATE= "$day.$month1.$year"
+
         textView.setText(Keys.DATE_OF_ORDER)
         input_date_layout.setEndIconOnClickListener {
             val dpd = DatePickerDialog(requireContext(), { _, year, _, dayOfMonth ->
@@ -81,6 +101,7 @@ class MainFragment : Fragment() {
         }
 
 
+
         setBottomSheetBehavior(view.findViewById(R.id.bottom_sheet_container))
         setBottomAppBar(view)
         hideAndShowDate()
@@ -91,7 +112,10 @@ class MainFragment : Fragment() {
                     Keys.LIST_KEY = mainList.id2
                     count += 1
                     val manager = activity?.supportFragmentManager
+
                     makeDetails(manager, mainList)
+
+
 
                 } else {
                     binding.inputEditTextDate.show()
@@ -99,7 +123,9 @@ class MainFragment : Fragment() {
                     Keys.LIST_KEY = Keys.DEFAULT_VALUE
                     val manager = activity?.supportFragmentManager
                     repositoryResult.rememberMainList(mainList)
+
                     makeDetails(manager, mainList)
+
                 }
             }
 
@@ -140,20 +166,21 @@ class MainFragment : Fragment() {
         if (item.itemId == R.id.send_main_bottom_bar) {
            // var dateFromCalendar= Keys.DEFAULT_MAINlIST
             if (Keys.DATE_OF_ORDER!= "") {
-               val dateFromCalendar= MainList("date","date",Keys.DATE_OF_ORDER,Keys.DEFAULT_VALUE) // убрать хардкод из этой строки
-                repositoryResult.rememberMainList(dateFromCalendar)
+               val dateFromCalendar= MainList("date","date",Keys.CURRENT_DATE,Keys.DEFAULT_VALUE) // убрать хардкод из этой строки
+                /*repositoryResult.rememberMainList(dateFromCalendar)*/
+                Keys.MAIN_REMEMEBERED_LIST.add(dateFromCalendar)
             }
 
 
-            if (viewModel.checkCompleteness(Keys.LIST_FOR_FIRST_SCREEN,Keys.MAIN_REMEMEBERED_LIST,Keys.DATE_OF_ORDER)=="Данные наряда заполнены не полностью"){
+           /* if (viewModel.checkCompleteness(Keys.LIST_FOR_FIRST_SCREEN,Keys.MAIN_REMEMEBERED_LIST,Keys.DATE_OF_ORDER)=="Данные наряда заполнены не полностью"){
                 toast("Данные наряда заполнены не полностью")
-            }
-            else {
+            }*/
+           /* else {*/
                 localRepository1C.putDataToResultDB(Keys.MAIN_REMEMEBERED_LIST)
                 toast("данные записаны успешно")
               /*  viewModel.getFinishedOrdersFromServer()*/
-                viewModel.pullDataToServer(localRepository1C.getAllDataDBResultEntity())
-                viewModel.getData().observe(viewLifecycleOwner, { isDataUploadedToServer(it) })
+               /* viewModel.pullDataToServer(localRepository1C.getAllDataDBResultEntity())*/
+               /* viewModel.getData().observe(viewLifecycleOwner, { isDataUploadedToServer(it) })*/
              /* Keys.GLOBAL_LIST=Keys.DEFAULT_lIST*/
                 Keys.LIST_FOR_FIRST_SCREEN = mutableListOf()
                 Keys.MAIN_REMEMEBERED_LIST= mutableListOf()
@@ -172,10 +199,11 @@ class MainFragment : Fragment() {
 
 
             }
-        }
+      /*  }*/
 
         return super.onOptionsItemSelected(item)
     }
+
 
     private fun makeDetails(
         manager: FragmentManager?,
@@ -255,8 +283,15 @@ class MainFragment : Fragment() {
 
     }
     private fun hideAndShowDate(){
+        val etSearchBar=binding.inputEditText
         if (count!= KEY_FOR_INFLATE_MAIN_LIST) {
             //второй экран
+            if (etSearchBar.requestFocus()) {
+                (requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(
+                    InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY
+                )
+
+            }
             binding.inputEditTextDate.isGone=true
             binding.bottomBarMain.isGone=true
             binding.inputLayout.isGone=false
@@ -264,13 +299,16 @@ class MainFragment : Fragment() {
             binding.inputDateLayout.endIconMode=TextInputLayout.END_ICON_NONE
             val params = binding.mainFragmentRecyclerView.layoutParams as ConstraintLayout.LayoutParams
             params.topToBottom=binding.inputLayout.id
+            etSearchBar.inputType = InputType.TYPE_CLASS_PHONE;
 
 
         } else {
             //первый экран
-            binding.inputDateLayout.isGone=false
-            binding.inputLayout.isGone=true
+            binding.inputDateLayout.isGone=true
+            binding.inputLayout.isGone=false
             binding.bottomBarMain.isGone=false
+            etSearchBar.inputType = InputType.TYPE_CLASS_TEXT;
+
         }
     }
     private fun goToSaveFragment(

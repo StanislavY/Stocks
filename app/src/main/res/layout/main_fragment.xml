@@ -31,7 +31,13 @@
                 android:id="@+id/input_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="55dp"
-                android:inputType="text" />
+                android:inputType="text"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+
+                />
+
+
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout

@@ -25,6 +25,8 @@ object Keys {
     var DATE_OF_ORDER=""
     var GLOBAL_LIST= DEFAULT_lIST
     var LIST_FOR_FIRST_SCREEN:List<MainList> = mutableListOf()
-    val DEFAULD_VALUE_FOR_GENERATED_LIST=""
+    const val DEFAULT_VALUE_FOR_GENERATED_LIST=""
+    var CURRENT_DATE=""
+
 
 }
